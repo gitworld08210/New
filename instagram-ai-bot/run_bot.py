@@ -2,8 +2,8 @@ from instagrapi import Client
 import random, time, requests, re, os, subprocess
 
 # ===== INSTAGRAM DETAILS =====
-USERNAME = "YOUR_USERNAME"
-PASSWORD = "YOUR_PASSWORD"
+USERNAME = os.getenv("INSTAGRAM_USERNAME", "YOUR_USERNAME")
+PASSWORD = os.getenv("INSTAGRAM_PASSWORD", "YOUR_PASSWORD")
 
 # ===== SUPABASE DATABASE =====
 SUPABASE_URL = "https://ijkxadnmeqfflfuwvmfz.supabase.co"
