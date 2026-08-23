@@ -13,7 +13,8 @@ import time
 import random
 import os
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "YOUR_GROQ_API_KEY_HERE")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "YOUR_GROQ_KEY_HERE")
+# Colab mein run karo: !GROQ_API_KEY="gsk_xxx" python generate_training_data.py
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 os.makedirs("training_output", exist_ok=True)
