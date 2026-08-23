@@ -1,0 +1,11 @@
+services:
+  - type: worker
+    name: instagram-bot
+    runtime: python
+    buildCommand: pip install instagrapi requests
+    startCommand: python run_bot.py
+    envVars:
+      - key: INSTAGRAM_USERNAME
+        sync: false
+      - key: INSTAGRAM_PASSWORD
+        sync: false
