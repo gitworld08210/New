@@ -53,18 +53,34 @@ def add_response(keyword, response, category="general"):
     except:
         return False
 
+import re
+
 defaults = ["Hmm batao? 😊", "Accha! Phir? 🤔", "Nice! 😄", "Sahi hai! 😊", "Aur bata? 🤗", "Interesting! 😄", "Mast! 🙌", "Haan bata? 😊", "Phir? 😄", "Okay! 👍"]
+
+# Short keywords jo word boundary match honi chahiye (nahi toh "chhinra" mein "hi" match ho jaata hai)
+SHORT_KEYWORDS = {"hi", "hey", "ok", "no", "ha", "na", "kya", "ho", "so", "tu"}
 
 def get_reply(msg, responses):
     m = msg.lower().strip()
-    # Exact match first
+
+    # 1. Exact full message match
     for k, v in responses.items():
         if m == k:
             return random.choice(v)
-    # Partial match
-    for k, v in responses.items():
-        if k in m:
-            return random.choice(v)
+
+    # 2. Multi-word keyword match (longer keywords first — more specific)
+    sorted_keywords = sorted(responses.keys(), key=len, reverse=True)
+    for k in sorted_keywords:
+        if len(k) <= 3 or k in SHORT_KEYWORDS:
+            # Short keywords: word boundary match only
+            pattern = r'\b' + re.escape(k) + r'\b'
+            if re.search(pattern, m):
+                return random.choice(responses[k])
+        else:
+            # Longer keywords: substring match is fine
+            if k in m:
+                return random.choice(responses[k])
+
     return random.choice(defaults)
 
 # === START ===
