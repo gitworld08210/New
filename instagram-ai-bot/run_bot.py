@@ -1,5 +1,22 @@
 from instagrapi import Client
-import random, time, requests, re, os, subprocess
+import random, time, requests, re, os, subprocess, threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
+
+# Fake web server (Render ke liye — free tier mein port chahiye)
+class HealthHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"Bot is running!")
+    def log_message(self, *args):
+        pass
+
+def start_health_server():
+    port = int(os.getenv("PORT", 10000))
+    server = HTTPServer(("0.0.0.0", port), HealthHandler)
+    server.serve_forever()
+
+threading.Thread(target=start_health_server, daemon=True).start()
 
 # ===== INSTAGRAM DETAILS =====
 USERNAME = os.getenv("INSTAGRAM_USERNAME", "YOUR_USERNAME")
