@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyAI — Your Personal ChatBot</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <span class="logo-icon">🤖</span>
+                <span class="logo-text">MyAI</span>
+            </div>
+            <button class="new-chat-btn" onclick="newChat()">
+                <span>+</span> New Chat
+            </button>
+        </div>
+        <div class="chat-history" id="chatHistory">
+            <!-- Chat history items will be added here -->
+        </div>
+        <div class="sidebar-footer">
+            <div class="model-info">
+                <span class="status-dot"></span>
+                <span>Model: Online</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+        <!-- Top Bar -->
+        <div class="topbar">
+            <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+            <h1 class="topbar-title">MyAI</h1>
+            <div class="topbar-actions">
+                <button class="theme-btn" onclick="toggleTheme()">🌙</button>
+            </div>
+        </div>
+
+        <!-- Chat Container -->
+        <div class="chat-container" id="chatContainer">
+            <!-- Welcome Screen -->
+            <div class="welcome-screen" id="welcomeScreen">
+                <div class="welcome-icon">🤖</div>
+                <h2>MyAI — Tumhara Apna AI Dost</h2>
+                <p>Kuch bhi pucho, baat karo, mujhse share karo!</p>
+                <div class="suggestion-cards">
+                    <div class="suggestion-card" onclick="sendSuggestion('Hi! Kaise ho?')">
+                        <span class="card-icon">👋</span>
+                        <span>Hi! Kaise ho?</span>
+                    </div>
+                    <div class="suggestion-card" onclick="sendSuggestion('Bore ho raha hoon, kuch batao')">
+                        <span class="card-icon">😴</span>
+                        <span>Bore ho raha hoon</span>
+                    </div>
+                    <div class="suggestion-card" onclick="sendSuggestion('Koi joke sunao')">
+                        <span class="card-icon">😂</span>
+                        <span>Joke sunao</span>
+                    </div>
+                    <div class="suggestion-card" onclick="sendSuggestion('Movie suggest karo')">
+                        <span class="card-icon">🎬</span>
+                        <span>Movie suggest karo</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            <div class="messages" id="messages">
+                <!-- Messages will be added here dynamically -->
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="input-area">
+            <div class="input-container">
+                <textarea 
+                    id="messageInput" 
+                    placeholder="Message MyAI..." 
+                    rows="1"
+                    onkeydown="handleKeyDown(event)"
+                    oninput="autoResize(this)"
+                ></textarea>
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+            <p class="disclaimer">MyAI tumhara personal trained model hai. Yeh galat bhi ho sakta hai.</p>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>

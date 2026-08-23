@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+session_*.json
+trained_model/
+model_gguf/
+merged_model/
+collected_data/
+training_data/
+*.gguf
+.DS_Store
+venv/
+env/
