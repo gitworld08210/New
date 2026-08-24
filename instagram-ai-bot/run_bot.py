@@ -38,6 +38,7 @@ def load_responses():
         url = f"{SUPABASE_URL}/rest/v1/bot_responses?select=keyword,response"
         headers = {"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"}
         r = requests.get(url, headers=headers, timeout=10)
+        print(f"  📡 Supabase response: HTTP {r.status_code}")
         if r.status_code == 200:
             data = r.json()
             responses = {}
@@ -48,8 +49,10 @@ def load_responses():
                 responses[kw].append(item["response"])
             return responses, len(data)
         else:
+            print(f"  ❌ Supabase error: {r.status_code} — {r.text[:200]}")
             return None, 0
-    except:
+    except Exception as e:
+        print(f"  ❌ Supabase connection failed: {e}")
         return None, 0
 
 def get_reply(msg, responses):
@@ -85,12 +88,15 @@ print("✅ Logged in as @" + USERNAME)
 
 # First load
 print("📦 Loading responses from Supabase...")
+print(f"   URL: {SUPABASE_URL}")
+print(f"   Key: {SUPABASE_KEY[:20]}...")
 responses, count = load_responses()
 if responses:
     print(f"   ✅ Loaded {count} responses from database!")
 else:
-    print("   ⚠️ Database connect nahi hua. Defaults use honge.")
-    responses = {}
+    print("   ❌ Database se data NAHI aaya! Bot band ho raha hai.")
+    print("   Check: Internet ON hai? Supabase URL/Key sahi hai?")
+    exit(1)
 
 my_id = str(cl.user_id)
 replied = set()
