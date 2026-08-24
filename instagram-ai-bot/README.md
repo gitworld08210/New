@@ -185,3 +185,41 @@ Agar koi step mein problem aaye toh:
 **Made with ❤️ for learning purposes**
 
 ⚠️ Disclaimer: Yeh project educational purpose ke liye hai. Instagram automation unki Terms of Service ke against hai. Apni responsibility pe use karo.
+
+
+## Termux par cautious test
+
+Colab screenshot ka matlab: training complete hui (`Loss: 2.1924`), Flask local server start hua, aur sirf ngrok authentication fail hui. Training dobara karne ki zaroorat nahi.
+
+Termux mein sirf apne/authorized Instagram account par test karo. Current launcher default mein crash ke baad automatic 30-second login retry nahi karta.
+
+```bash
+pkg update -y
+pkg install -y git python libjpeg-turbo
+python -m pip install --upgrade pip
+cd ~
+git clone https://github.com/gitworld08210/New.git
+cd New
+python -m pip install --no-cache-dir -r instagram-ai-bot/requirements_termux.txt
+```
+
+Credentials ko command history mein save na karne ke liye current shell mein set karo:
+
+```bash
+export INSTAGRAM_USERNAME='YOUR_USERNAME'
+export INSTAGRAM_PASSWORD='YOUR_PASSWORD'
+```
+
+Pehla test direct run karo:
+
+```bash
+python instagram-ai-bot/run_bot.py
+```
+
+Agar bot login hokar `INSTAGRAM Auto-Reply Bot RUNNING` dikhaye tabhi launcher use karo:
+
+```bash
+bash instagram-ai-bot/start.sh
+```
+
+`AUTO_RESTART=1` abhi use mat karo. Instagram login error, `ChallengeRequired`, ya `429` aaye to process band karke retry mat karte raho; Render/Colab sessions stop karo, Instagram Login Activity check karo, aur password rotate karo agar credentials expose hue hon.

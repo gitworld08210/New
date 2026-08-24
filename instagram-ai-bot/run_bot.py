@@ -1,6 +1,7 @@
 from instagrapi import Client
 import random, time, requests, re, os, subprocess, threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
+from instagrapi import Client
 
 # Fake web server (Render ke liye — free tier mein port chahiye)
 class HealthHandler(BaseHTTPRequestHandler):
@@ -32,23 +33,38 @@ SHORT_KEYWORDS = {"hi", "hey", "ok", "no", "ha", "na", "kya", "ho", "so", "tu", 
 defaults = ["Hmm batao? 😊", "Accha! Phir? 🤔", "Nice! 😄", "Sahi hai! 😊", "Aur bata? 🤗", "Interesting! 😄", "Mast! 🙌", "Haan bata? 😊", "Phir? 😄", "Okay! 👍"]
 
 def load_responses():
-    """Supabase se LIVE responses load karta hai. Har call pe fresh data."""
+    """Supabase se ALL responses load karta hai using pagination (max 1000 per call)."""
     try:
-        url = f"{SUPABASE_URL}/rest/v1/bot_responses?select=keyword,response"
-        headers = {"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"}
-        r = requests.get(url, headers=headers, timeout=10)
-        if r.status_code == 200:
-            data = r.json()
-            responses = {}
-            for item in data:
-                kw = item["keyword"].lower().strip()
-                if kw not in responses:
-                    responses[kw] = []
-                responses[kw].append(item["response"])
-            return responses, len(data)
-        else:
+        all_data = []
+        offset = 0
+        while True:
+            url = f"{SUPABASE_URL}/rest/v1/bot_responses?select=keyword,response&limit=1000&offset={offset}"
+            headers = {"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"}
+            r = requests.get(url, headers=headers, timeout=15)
+            if r.status_code == 200:
+                data = r.json()
+                if not data:
+                    break
+                all_data.extend(data)
+                offset += 1000
+                if len(data) < 1000:
+                    break
+            else:
+                print(f"  ❌ Supabase error: {r.status_code}")
+                break
+        print(f"  📡 Supabase: loaded {len(all_data)} total rows")
+        if not all_data:
             return None, 0
-    except:
+        responses = {}
+        for item in all_data:
+            kw = item["keyword"].lower().strip()
+            if kw not in responses:
+                responses[kw] = []
+            responses[kw].append(item["response"])
+        print(f"  📊 {len(responses)} unique keywords")
+        return responses, len(all_data)
+    except Exception as e:
+        print(f"  ❌ Supabase connection failed: {e}")
         return None, 0
 
 def get_reply(msg, responses):
@@ -67,6 +83,18 @@ def get_reply(msg, responses):
         else:
             if k in m:
                 return random.choice(responses[k])
+    # 3. No match — try partial word overlap
+    words = set(m.split())
+    best_match = None
+    best_score = 0
+    for k, v in responses.items():
+        kw_words = set(k.split())
+        overlap = len(words & kw_words)
+        if overlap > best_score and overlap >= 1:
+            best_score = overlap
+            best_match = v
+    if best_match and best_score >= 1:
+        return random.choice(best_match)
     return random.choice(defaults)
 
 def auto_update_code():
@@ -84,12 +112,15 @@ print("✅ Logged in as @" + USERNAME)
 
 # First load
 print("📦 Loading responses from Supabase...")
+print(f"   URL: {SUPABASE_URL}")
+print(f"   Key: {SUPABASE_KEY[:20]}...")
 responses, count = load_responses()
 if responses:
     print(f"   ✅ Loaded {count} responses from database!")
 else:
-    print("   ⚠️ Database connect nahi hua. Defaults use honge.")
-    responses = {}
+    print("   ❌ Database se data NAHI aaya! Bot band ho raha hai.")
+    print("   Check: Internet ON hai? Supabase URL/Key sahi hai?")
+    exit(1)
 
 my_id = str(cl.user_id)
 replied = set()
