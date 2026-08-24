@@ -35,22 +35,36 @@ defaults = ["Hmm batao? 😊", "Accha! Phir? 🤔", "Nice! 😄", "Sahi hai! �
 def load_responses():
     """Supabase se LIVE responses load karta hai. Har call pe fresh data."""
     try:
-        url = f"{SUPABASE_URL}/rest/v1/bot_responses?select=keyword,response"
-        headers = {"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"}
-        r = requests.get(url, headers=headers, timeout=10)
-        print(f"  📡 Supabase response: HTTP {r.status_code}")
-        if r.status_code == 200:
-            data = r.json()
-            responses = {}
-            for item in data:
-                kw = item["keyword"].lower().strip()
-                if kw not in responses:
-                    responses[kw] = []
-                responses[kw].append(item["response"])
-            return responses, len(data)
-        else:
-            print(f"  ❌ Supabase error: {r.status_code} — {r.text[:200]}")
+        all_data = []
+        page_size = 1000
+        offset = 0
+        while True:
+            url = f"{SUPABASE_URL}/rest/v1/bot_responses?select=keyword,response&limit={page_size}&offset={offset}"
+            headers = {"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"}
+            r = requests.get(url, headers=headers, timeout=15)
+            print(f"  📡 Supabase response: HTTP {r.status_code} (offset={offset})")
+            if r.status_code == 200:
+                data = r.json()
+                if not data:
+                    break
+                all_data.extend(data)
+                offset += page_size
+                if len(data) < page_size:
+                    break
+            else:
+                print(f"  ❌ Supabase error: {r.status_code} — {r.text[:200]}")
+                break
+
+        if not all_data:
             return None, 0
+
+        responses = {}
+        for item in all_data:
+            kw = item["keyword"].lower().strip()
+            if kw not in responses:
+                responses[kw] = []
+            responses[kw].append(item["response"])
+        return responses, len(all_data)
     except Exception as e:
         print(f"  ❌ Supabase connection failed: {e}")
         return None, 0
@@ -71,6 +85,18 @@ def get_reply(msg, responses):
         else:
             if k in m:
                 return random.choice(responses[k])
+    # 3. No match — try partial word overlap
+    words = set(m.split())
+    best_match = None
+    best_score = 0
+    for k, v in responses.items():
+        kw_words = set(k.split())
+        overlap = len(words & kw_words)
+        if overlap > best_score and overlap >= 1:
+            best_score = overlap
+            best_match = v
+    if best_match and best_score >= 1:
+        return random.choice(best_match)
     return random.choice(defaults)
 
 def auto_update_code():
