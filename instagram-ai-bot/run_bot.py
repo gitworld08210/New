@@ -33,38 +33,27 @@ SHORT_KEYWORDS = {"hi", "hey", "ok", "no", "ha", "na", "kya", "ho", "so", "tu", 
 defaults = ["Hmm batao? 😊", "Accha! Phir? 🤔", "Nice! 😄", "Sahi hai! 😊", "Aur bata? 🤗", "Interesting! 😄", "Mast! 🙌", "Haan bata? 😊", "Phir? 😄", "Okay! 👍"]
 
 def load_responses():
-    """Supabase se LIVE responses load karta hai. Har call pe fresh data."""
+    """Supabase se LIVE responses load karta hai. Single call with high limit."""
     try:
-        all_data = []
-        page_size = 1000
-        offset = 0
-        while True:
-            url = f"{SUPABASE_URL}/rest/v1/bot_responses?select=keyword,response&limit={page_size}&offset={offset}"
-            headers = {"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"}
-            r = requests.get(url, headers=headers, timeout=15)
-            print(f"  📡 Supabase response: HTTP {r.status_code} (offset={offset})")
-            if r.status_code == 200:
-                data = r.json()
-                if not data:
-                    break
-                all_data.extend(data)
-                offset += page_size
-                if len(data) < page_size:
-                    break
-            else:
-                print(f"  ❌ Supabase error: {r.status_code} — {r.text[:200]}")
-                break
-
-        if not all_data:
+        url = f"{SUPABASE_URL}/rest/v1/bot_responses?select=keyword,response&limit=20000"
+        headers = {"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"}
+        r = requests.get(url, headers=headers, timeout=30)
+        print(f"  📡 Supabase response: HTTP {r.status_code}")
+        if r.status_code == 200:
+            data = r.json()
+            if not data:
+                return None, 0
+            responses = {}
+            for item in data:
+                kw = item["keyword"].lower().strip()
+                if kw not in responses:
+                    responses[kw] = []
+                responses[kw].append(item["response"])
+            print(f"  📊 Loaded {len(data)} rows, {len(responses)} unique keywords")
+            return responses, len(data)
+        else:
+            print(f"  ❌ Supabase error: {r.status_code} — {r.text[:200]}")
             return None, 0
-
-        responses = {}
-        for item in all_data:
-            kw = item["keyword"].lower().strip()
-            if kw not in responses:
-                responses[kw] = []
-            responses[kw].append(item["response"])
-        return responses, len(all_data)
     except Exception as e:
         print(f"  ❌ Supabase connection failed: {e}")
         return None, 0
