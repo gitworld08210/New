@@ -1,6 +1,7 @@
 from instagrapi import Client
 import random, time, requests, re, os, subprocess, threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
+from instagrapi import Client
 
 # Fake web server (Render ke liye — free tier mein port chahiye)
 class HealthHandler(BaseHTTPRequestHandler):
